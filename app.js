@@ -32,7 +32,7 @@
   }
   let state = load();
   let page = ['home','mood','planner','joy','journal','memories','wellness','settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home';
-  let selectedMood = 0, joyCategory = 'all', joySearch = '', activeMemoryTab = 'memories', plannerDuration = 60, plannerEnergy = 'medium';
+  let selectedMood = null, joyCategory = 'all', joySearch = '', activeMemoryTab = 'memories', plannerDuration = 60, plannerEnergy = 'medium';
   let toastTimer;
   const tData = {
     en: {
@@ -292,7 +292,7 @@
       `<button type="button" data-mood="${m.score}" aria-pressed="${selectedMood===m.score}" class="mood-option ${selectedMood===m.score?'selected':''}"><span class="face">${m.emoji}</span><small>${esc(t(m.key))}</small></button>`).join('')}</div>`;
   }
   function moodForm() {
-    return `<form id="moodForm" class="stack"><div>${moodPicker()}</div><div class="field"><label for="moodNote">${esc(t('moodNote'))}</label><textarea id="moodNote" class="textarea" maxlength="1200" placeholder="${esc(t('moodPlaceholder'))}"></textarea></div><div class="card-actions"><span class="helper">${esc(t('dailyTip'))}</span><button type="submit" class="btn btn-primary">${ico('heart',15)} ${esc(t('saveMood'))}</button></div></form>`;
+    return `<form id="moodForm" class="stack"><div>${moodPicker()}</div><div class="field"><label for="moodNote">${esc(t('moodNote'))}</label><textarea id="moodNote" class="textarea" maxlength="1200" placeholder="${esc(t('moodPlaceholder'))}"></textarea></div><div class="card-actions"><span class="helper">${esc(t('dailyTip'))}</span><button type="submit" class="btn btn-primary" ${selectedMood===null?'disabled':''}>${ico('heart',15)} ${esc(t('saveMood'))}</button></div></form>`;
   }
   function weeklyMoodChart() {
     const days = Array.from({length:7},(_,i)=>{const d = new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-6+i);return d;});
@@ -570,11 +570,11 @@
     if(action==='generate-plan'){generatePlan();return;}
     if(action==='export'){exportData();return;}
     if(action==='menu')return modal(t('more'),`<div class="stack">${NAV.map(x=>`<button class="nav-item" style="background:var(--surface2)" data-nav="${x.id}">${ico(x.icon)} ${esc(t(x.id))}</button>`).join('')}</div>`);
-    if(action==='erase' && confirm(t('eraseConfirm'))){state=defaults();selectedMood=0;joyCategory='all';joySearch='';save();closeModal();navigate('home');toast(t('dataCleared'));}
+    if(action==='erase' && confirm(t('eraseConfirm'))){state=defaults();selectedMood=null;joyCategory='all';joySearch='';save();closeModal();navigate('home');toast(t('dataCleared'));}
   }
   document.addEventListener('click',event=>{
     const nav=event.target.closest('[data-nav]');if(nav){event.preventDefault();closeModal();navigate(nav.dataset.nav);return;}
-    const mood=event.target.closest('[data-mood]');if(mood){selectedMood=Number(mood.dataset.mood);$$('[data-mood]').forEach(el=>{let active=Number(el.dataset.mood)===selectedMood;el.classList.toggle('selected',active);el.setAttribute('aria-pressed',String(active));});return;}
+    const mood=event.target.closest('[data-mood]');if(mood){selectedMood=Number(mood.dataset.mood);$$('[data-mood]').forEach(el=>{let active=Number(el.dataset.mood)===selectedMood;el.classList.toggle('selected',active);el.setAttribute('aria-pressed',String(active));});$('#moodForm button[type="submit"]')?.removeAttribute('disabled');return;}
     const action=event.target.closest('[data-action]');if(action){event.preventDefault();handleAction(action.dataset.action);return;}
     const filter=event.target.closest('[data-filter]');if(filter){joyCategory=filter.dataset.filter;render();$('#joySearch')?.focus();return;}
     const tab=event.target.closest('[data-tab]');if(tab){activeMemoryTab=tab.dataset.tab;render();return;}
@@ -610,16 +610,16 @@
     const data=new FormData(form),time=new Date().toISOString();
     if(form.id==='moodForm'){
       if(!MOODS.some(x=>x.score===selectedMood))return;
-      state.moods.push({id:uid(),time,score:selectedMood,note:trunc($('#moodNote',form)?.value,1200)});save();render();toast(t('moodSaved'));
+      state.moods.push({id:uid(),time,score:selectedMood,note:trunc($('#moodNote',form)?.value,1200)});if(!save()){state.moods.pop();return;}selectedMood=null;render();toast(t('moodSaved'));
     } else if(form.id==='favoriteForm'){
       const name=trunc(data.get('name')?.trim(),100);if(!name)return toast(t('required'));
-      const type=String(data.get('type'));state.favorites.push({id:uid(),time,name,type:TYPES.some(x=>x.id===type)?type:'others',emoji:trunc(data.get('emoji'),8),notes:trunc(data.get('notes'),1500)});save();closeModal();render();toast(t('savedFavorite'));
+      const type=String(data.get('type'));state.favorites.push({id:uid(),time,name,type:TYPES.some(x=>x.id===type)?type:'others',emoji:trunc(data.get('emoji'),8),notes:trunc(data.get('notes'),1500)});if(!save()){state.favorites.pop();return;}closeModal();render();toast(t('savedFavorite'));
     } else if(form.id==='ideaForm'){
       const title=trunc(data.get('title')?.trim(),120);if(!title)return toast(t('required'));
-      const kind=String(data.get('kind'));state.ideas.push({id:uid(),time,title,kind:['creative','project','personal','reflection'].includes(kind)?kind:'creative',content:trunc(data.get('content'),8000)});save();closeModal();render();toast(t('savedIdea'));
+      const kind=String(data.get('kind'));state.ideas.push({id:uid(),time,title,kind:['creative','project','personal','reflection'].includes(kind)?kind:'creative',content:trunc(data.get('content'),8000)});if(!save()){state.ideas.pop();return;}closeModal();render();toast(t('savedIdea'));
     } else if(form.id==='memoryForm'){
       const title=trunc(data.get('title')?.trim(),120);if(!title)return toast(t('required'));
-      const date=String(data.get('date'));state.memories.push({id:uid(),time,title,date:/^\d{4}-\d{2}-\d{2}$/.test(date)?date:today(),emoji:trunc(data.get('emoji'),8),content:trunc(data.get('content'),8000)});save();closeModal();render();toast(t('savedMemory'));
+      const date=String(data.get('date'));state.memories.push({id:uid(),time,title,date:/^\d{4}-\d{2}-\d{2}$/.test(date)?date:today(),emoji:trunc(data.get('emoji'),8),content:trunc(data.get('content'),8000)});if(!save()){state.memories.pop();return;}closeModal();render();toast(t('savedMemory'));
     } else if(form.id==='photoForm'){
       const button=$('button[type="submit"]',form);if(button)button.disabled=true;
       try {
