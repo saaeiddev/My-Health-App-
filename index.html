@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f9fe">
+  <meta name="description" content="My Health — your personal space for feeling good. Track moods, collect your favorite things, treasure memories and plan joyful days.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="My Health">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+  <title>My Health — Feel good, your way.</title>
+</head>
+<body>
+  <div class="app-shell" id="app">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation"></aside>
+    <div class="workspace">
+      <header class="topbar" id="topbar"></header>
+      <main class="main-content" id="view" tabindex="-1">
+        <div class="boot-screen"><span class="boot-heart">♥</span><h1>My Health</h1><p>Your happy place is opening…</p></div>
+      </main>
+    </div>
+    <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation"></nav>
+  </div>
+  <div id="modalRoot"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script defer src="./app.js"></script>
+</body>
+</html>
