@@ -22,16 +22,16 @@ All of these sections are bilingual, responsive and saved locally. They appear i
 |---|---|
 | 🎧 Mood DJ | Makes an on-device mix from songs already saved in My Music, based on the latest recorded mood or a manually selected vibe. Opens saved listening links; it does not stream music itself. |
 | 🏆 Daily Quests | Preset and custom optional mini-challenges, daily checkboxes and earned XP. |
-| 🌿 My Comfort Zone | Personal soothing-things journal, a gentle optional animated breathing exercise, and calming tracks from My Music. |
-| 🌍 My Travel Map | Visited and dream destinations, notes and a stylized interactive world map. Pin coordinates are manually entered, with no location permission. |
-| 🌈 My Vision Board | Personal goals and inspiration with optional image links, categories and completion status. |
-| 🐾 My Pet | Pet profiles, optional pictures, birthdays and **in-app only** manual care reminders; not veterinary advice. |
+| 🌿 My Comfort Zone | Personal soothing-things journal with optional uploaded images, a gentle optional animated breathing exercise, and calming tracks from My Music. |
+| 🌍 My Travel Map | Visited and dream destinations, notes, optional uploaded photos and a stylized interactive world map. Pin coordinates are manually entered, with no location permission. |
+| 🌈 My Vision Board | Personal goals and inspiration with optional uploaded photos or HTTPS image links, categories and completion status. |
+| 🐾 My Pet | Pet profiles, optional uploaded pictures, birthdays and **in-app only** manual care reminders; not veterinary advice. |
 | 📊 My Life Insights | Read-only personal summaries of actual mood logs, water, daily quests and sleep; missing days are not inferred. |
 | 🤖 AI Creative Lab | An on-device personalized creative prompt generator, direct saving to Ideas, and an **opt-in** separate generative AI backend. |
 | 🎮 My Cinema & Gaming | Media watchlists and game backlogs, personal ratings, notes, completion status and links to your existing Favorites. |
 | 🌙 My Sleep & Dreams | Bedtime/wake-time self-logging with estimated hours, personal rest ratings and a private dream journal. |
 
-The original Overview, Mood Tracker, Joy Planner, My Music, Favorites, Ideas & Journal, Memories & Photos, Wellness and Settings are preserved. The new page implementation is in `extras.js`; its styling is scoped in `styles.css`. The main app supplies the new navigation routes, local data store, backups and shared settings.
+For Comfort, Travel, Vision Board, My Pet and Cinema & Gaming, users can choose a local JPG, PNG or WebP image (up to 6 MB) instead of an HTTPS image link. Photos are compressed locally using the existing Memories image compressor, then stored in the same browser-only backup data; no image upload server is involved. External image URLs are fetched from their original sites and may disclose a request to those sites.\n\nThe original Overview, Mood Tracker, Joy Planner, My Music, Favorites, Ideas & Journal, Memories & Photos, Wellness and Settings are preserved. The new page implementation is in `extras.js`; its styling is scoped in `styles.css`. The main app supplies the new navigation routes, local data store, backups and shared settings.
 
 ### Optional AI Creative Lab backend
 
@@ -74,9 +74,9 @@ Open http://localhost:8080. No npm installation is required for the static front
 
 ## Project files
 
-- `index.html`, `styles.css`, `app.js` — interactive responsive app
+- `index.html`, `styles.css`, `app.js`, `extras.js` — interactive responsive app and ten additional pages
 - `icon.svg`, `manifest.webmanifest`, `sw.js` — installable PWA
-- `api/plan.js` — opt-in serverless AI backend
+- `api/plan.js`, `api/create.js` — opt-in serverless AI backends (require separate deployment)
 - `.github/workflows/deploy.yml` — GitHub Pages deployment
 
 Created for Amir Saeid Dehghan · 2026.
