@@ -31,8 +31,8 @@
     } catch { return defaults(); }
   }
   let state = load();
-  let page = ['home','mood','planner','joy','journal','memories','wellness','settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home';
-  let selectedMood = null, joyCategory = 'all', joySearch = '', activeMemoryTab = 'memories', plannerDuration = 60, plannerEnergy = 'medium';
+  let page = ['home','mood','planner','joy','music','journal','memories','wellness','settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home';
+  let selectedMood = null, joyCategory = 'all', joySearch = '', musicSearch = '', musicVibe = 'all', activeMemoryTab = 'memories', plannerDuration = 60, plannerEnergy = 'medium';
   let toastTimer;
   const tData = {
     en: {
@@ -112,6 +112,15 @@
       about:'About the app', aboutText:'An independent Apple Health-inspired concept, not affiliated with Apple. All dashboard tracking is manual.',
       viewMood:'View mood log', affirm:'Your pace is your own.', entriesEmpty:'Nothing saved yet.',
       meal:'Make a favorite snack', musicBreak:'Your own soundtrack', peaceful:'A little reset', creativity:'Make something',
+      musicTitle:'Your personal soundtrack', musicSub:'Keep the songs, albums and artists that feel like you — all in one colorful space.',
+      musicAdd:'Add a song', musicEmpty:'Your soundtrack starts here', musicEmptyText:'Add a favorite song, its artist and a listening link. You can always come back to the music you love.',
+      musicSearch:'Search by song, artist or album...', musicSong:'Song title', musicArtist:'Artist / band', musicAlbum:'Album (optional)',
+      musicCover:'Album artwork URL (optional)', musicLink:'Listen link (optional)', musicVibe:'What vibe does it give you?',
+      musicAll:'All vibes', musicHappy:'Happy', musicCalm:'Calm', musicEnergy:'Energetic', musicNostalgic:'Nostalgic', musicFocus:'Focus',
+      musicOther:'Any vibe', musicNotes:'Why do you love this song? (optional)', musicListen:'Listen ↗', musicSaved:'Added to your soundtrack',
+      musicCount:'favorite tracks', musicLatest:'Recently added', musicLocal:'Your playlist is saved in this browser. Listening links open in a new tab.',
+      musicUrlError:'Please enter a valid HTTPS link.', musicDuplicate:'That song by this artist is already saved.',
+      musicFavoriteCard:'Your soundtrack', musicFavoriteCardSub:'A few favorite songs can brighten a moment.', musicManage:'Open My Music',
       personalNote:'This is a journaling and lifestyle app, not an emergency or clinical service.'
     },
     fa: {
@@ -191,6 +200,15 @@
       about:'درباره برنامه', aboutText:'یک نمونه مستقل با الهام از Apple Health؛ وابسته به اپل نیست. تمام اطلاعات داشبورد دستی ثبت می‌شن.',
       viewMood:'نمایش تاریخچه', affirm:'با سرعت خودت جلو برو.', entriesEmpty:'هنوز چیزی ذخیره نشده.',
       meal:'میان‌وعده موردعلاقه', musicBreak:'موسیقی مخصوص خودت', peaceful:'یک استراحت کوچک', creativity:'چیزی بساز',
+      musicTitle:'موزیک‌های موردعلاقه من', musicSub:'آهنگ‌ها، آلبوم‌ها و خواننده‌هایی که دوست داری رو توی یک فضای رنگارنگ نگه دار.',
+      musicAdd:'افزودن آهنگ', musicEmpty:'پلی‌لیست تو از اینجا شروع می‌شه', musicEmptyText:'آهنگ محبوبت، خواننده و لینک شنیدنش رو ثبت کن تا همیشه کنارت باشه.',
+      musicSearch:'جست‌وجوی آهنگ، خواننده یا آلبوم...', musicSong:'نام آهنگ', musicArtist:'خواننده / گروه', musicAlbum:'آلبوم (اختیاری)',
+      musicCover:'لینک تصویر کاور (اختیاری)', musicLink:'لینک شنیدن (اختیاری)', musicVibe:'این آهنگ چه حال‌وهوایی داره؟',
+      musicAll:'همه حال‌وهواها', musicHappy:'شاد', musicCalm:'آروم', musicEnergy:'پرانرژی', musicNostalgic:'نوستالژیک', musicFocus:'تمرکز',
+      musicOther:'هر حال‌وهوایی', musicNotes:'چرا این آهنگ رو دوست داری؟ (اختیاری)', musicListen:'گوش دادن ↗', musicSaved:'به موزیک‌های محبوبت اضافه شد',
+      musicCount:'آهنگ محبوب', musicLatest:'تازه اضافه‌شده‌ها', musicLocal:'موزیک‌های محبوبت در همین مرورگر ذخیره می‌شن. لینک شنیدن در تب جدید باز می‌شه.',
+      musicUrlError:'لطفاً لینک HTTPS معتبر وارد کن.', musicDuplicate:'این آهنگ از همین خواننده قبلاً ذخیره شده.',
+      musicFavoriteCard:'موزیک‌های تو', musicFavoriteCardSub:'چند آهنگ محبوب می‌تونه حال‌وهوای روزت رو عوض کنه.', musicManage:'مشاهده موزیک‌ها',
       personalNote:'این برنامه برای سبک زندگی و یادداشت‌های شخصی است، نه خدمات اورژانسی یا بالینی.'
     }
   };
@@ -211,7 +229,7 @@
   const NAV = [
     {id:'home',icon:'home',group:0},{id:'mood',icon:'heart',group:0},
     {id:'planner',icon:'sparkle',group:0},{id:'wellness',icon:'activity',group:0},
-    {id:'joy',icon:'star',group:1},{id:'journal',icon:'notebook',group:1},
+    {id:'joy',icon:'star',group:1},{id:'music',icon:'music',group:1},{id:'journal',icon:'notebook',group:1},
     {id:'memories',icon:'image',group:1},{id:'settings',icon:'settings',group:1}
   ];
   const paths = {
@@ -219,6 +237,7 @@
     heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>',
     sparkle:'<path d="m12 3 1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9zM20 18l.7 1.3L22 20l-1.3.7L20 22l-.7-1.3L18 20l1.3-.7z"/>',
     activity:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+    music:'<path d="M9 18V5l12-2v13"/><ellipse cx="6" cy="18" rx="3" ry="2.2"/><ellipse cx="18" cy="16" rx="3" ry="2.2"/>',
     star:'<path d="m12 2 3.1 6.7 7.4.9-5.4 5.2 1.3 7.3-6.4-3.5-6.4 3.5 1.3-7.3-5.4-5.2 7.4-.9z"/>',
     notebook:'<rect x="5" y="3" width="15" height="18" rx="2"/><path d="M9 3v18M12 8h5M12 12h5"/>',
     image:'<rect x="2.5" y="3" width="19" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 6"/>',
@@ -321,6 +340,8 @@
       <section class="card span-5"><div class="card-head"><div><h2 class="card-title">${ico('activity')} ${esc(t('lastSeven'))}</h2><p class="card-subtitle">${esc(t('lastSevenSub'))}</p></div><button class="subtle-link" data-nav="mood">${esc(t('viewAll'))}</button></div>${weeklyMoodChart()}</section>
       <section class="card span-8"><div class="card-head"><div><h2 class="card-title">${ico('star')} ${esc(t('joys'))}</h2><p class="card-subtitle">${esc(t('joysSub'))}</p></div><button class="subtle-link" data-nav="joy">${esc(t('viewAll'))} →</button></div>
       ${state.favorites.length?`<div class="joy-tags">${state.favorites.slice(-8).reverse().map(f=>`<button class="joy-tag" data-nav="joy"><b>${esc(f.emoji||typeIcon(f.type))}</b> ${esc(trunc(f.name,24))}</button>`).join('')}</div><div style="margin-top:18px"><button class="btn btn-light btn-sm" data-action="favorite">${ico('plus',14)} ${esc(t('addFavorite'))}</button></div>`:empty('🎮',t('favoriteEmpty'),t('favoriteEmptyText'),t('addFavorite'),'favorite')}</section>
+      <section class="card span-12"><div class="card-head"><div><h2 class="card-title">🎧 ${esc(t('musicFavoriteCard'))}</h2><p class="card-subtitle">${esc(t('musicFavoriteCardSub'))}</p></div><button class="subtle-link" data-nav="music">${esc(t('musicManage'))} →</button></div>
+        ${musicTracks().length?'<div class="music-home-row">'+musicTracks().slice(0,3).map(track=>`<div class="music-home-item"><div class="music-home-art">${musicCover(track)}</div><div><strong>${esc(track.name)}</strong><small>${esc(track.artist||'—')}</small></div></div>`).join('')+'</div>':empty('🎵',t('musicEmpty'),t('musicEmptyText'),t('musicAdd'),'music-add')}</section>
       <section class="card quote-card span-4"><div class="quote-symbol">❝</div><blockquote>${esc(t('quote'))}</blockquote><small>♥ ${esc(t('quoteBy'))}</small></section>
       <section class="card prompt-card span-6"><span class="prompt-icon">🎨</span><h3>${esc(t('joyIdea'))}</h3><p>${esc(t('joyIdeaText'))}</p><button class="btn btn-white btn-sm" data-nav="planner">${esc(t('getInspired'))} ${ico('arrow',14)}</button></section>
       <section class="card span-6"><div class="card-head"><h2 class="card-title">${ico('activity')} ${esc(t('today'))}</h2><button class="subtle-link" data-nav="wellness">${esc(t('viewAll'))} →</button></div>
@@ -355,6 +376,76 @@
       <div class="flex-wrap" id="joyFilters" style="margin-bottom:23px">${[{id:'all',icon:'🌈'},...TYPES].map(x=>`<button class="chip ${joyCategory===x.id?'selected':''}" data-filter="${x.id}"><span class="chip-emoji">${x.icon}</span>${esc(t(x.id))}</button>`).join('')}</div>
       <div id="joyGrid">${joyGrid()}</div>`;
   }
+
+  const MUSIC_VIBES = [
+    {id:'all',icon:'🎵',name:'musicAll'},
+    {id:'happy',icon:'🌞',name:'musicHappy'},
+    {id:'calm',icon:'🌿',name:'musicCalm'},
+    {id:'energy',icon:'⚡',name:'musicEnergy'},
+    {id:'nostalgic',icon:'🌙',name:'musicNostalgic'},
+    {id:'focus',icon:'✨',name:'musicFocus'},
+    {id:'other',icon:'💜',name:'musicOther'}
+  ];
+  const musicTracks = () => cleanList(state.favorites.filter(x => x.type === 'music'));
+  function safeMusicUrl(value) {
+    if (typeof value !== 'string' || value.length > 1000) return '';
+    try {
+      const u = new URL(value);
+      return u.protocol === 'https:' && u.hostname && !u.username && !u.password ? u.href : '';
+    } catch { return ''; }
+  }
+  function musicCover(track) {
+    const url = safeMusicUrl(track.cover);
+    return url
+      ? `<img class="music-artwork-image" src="${esc(url)}" loading="lazy" referrerpolicy="no-referrer" alt="${esc(track.album || track.name || t('musicTitle'))}" onerror="this.hidden=true">`
+      : `<span aria-hidden="true">${track.vibe==='energy'?'⚡':track.vibe==='calm'?'🌿':track.vibe==='nostalgic'?'🌙':track.vibe==='happy'?'☀️':'🎵'}</span>`;
+  }
+  function musicList() {
+    const query = musicSearch.trim().toLocaleLowerCase();
+    const songs = musicTracks().filter(track => {
+      const vibe = track.vibe || 'other';
+      return (musicVibe==='all' || musicVibe===vibe) &&
+        [track.name,track.artist,track.album,track.notes].some(v => String(v||'').toLocaleLowerCase().includes(query));
+    });
+    if(!songs.length) return empty('🎵',t('musicEmpty'),t('musicEmptyText'),t('musicAdd'),'music-add');
+    return `<div class="music-grid">${songs.map(track=>{
+      const link=safeMusicUrl(track.link),artist=track.artist || (state.lang==='fa'?'هنرمند نامشخص':'Unknown artist');
+      const vibe=MUSIC_VIBES.find(v=>v.id===(track.vibe||'other'))||MUSIC_VIBES[MUSIC_VIBES.length-1];
+      return `<article class="music-track">
+        <div class="music-track-art">${musicCover(track)}<span class="music-disc" aria-hidden="true">♫</span></div>
+        <div class="music-track-info"><div class="music-track-label">${esc(vibe.icon)} ${esc(t(vibe.name))}</div>
+          <h3 title="${esc(track.name)}">${esc(track.name)}</h3><p>${esc(artist)}${track.album?' · '+esc(track.album):''}</p>
+          ${track.notes?`<div class="music-track-note">${esc(trunc(track.notes,250))}</div>`:''}
+          <footer><div>${link?`<a class="btn btn-primary btn-sm" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${ico('arrow',13)} ${esc(t('musicListen'))}</a>`:'<span class="helper">🎧</span>'}</div>
+          <button class="delete-mini" data-delete="favorites" data-id="${esc(track.id)}" aria-label="${esc(t('delete'))}">${ico('trash',14)}</button></footer>
+        </div></article>`;
+    }).join('')}</div>`;
+  }
+  function renderMusic() {
+    const tracks=musicTracks();
+    return `${pageHead(t('musicTitle'),t('musicSub'),`<button class="btn btn-primary" data-action="music-add">${ico('plus')} ${esc(t('musicAdd'))}</button>`)}
+      <section class="music-hero"><div class="music-hero-copy"><span class="eyebrow">♪ MY MUSIC</span>
+        <h2>${esc(t('musicFavoriteCard'))} <span>♫</span></h2><p>${esc(t('musicFavoriteCardSub'))}</p>
+        <div class="music-hero-count">${tracks.length} <small>${esc(t('musicCount'))}</small></div></div>
+        <div class="music-hero-visual" aria-hidden="true"><div class="music-vinyl">♫</div><div class="music-note-floating">♪ ✧ ♫</div></div>
+      </section>
+      <div class="filter-row mt-28"><div class="searchbox">${ico('search')}<input id="musicSearch" class="input" maxlength="150" placeholder="${esc(t('musicSearch'))}" value="${esc(musicSearch)}" aria-label="${esc(t('musicSearch'))}"></div>
+        <button class="btn btn-light btn-sm" data-action="music-add">${ico('plus',14)} ${esc(t('musicAdd'))}</button></div>
+      <div class="flex-wrap" id="musicFilters" style="margin-bottom:22px">${MUSIC_VIBES.map(v=>`<button type="button" class="chip ${musicVibe===v.id?'selected':''}" data-music-vibe="${v.id}"><span class="chip-emoji">${v.icon}</span>${esc(t(v.name))}</button>`).join('')}</div>
+      <div id="musicList">${musicList()}</div><div class="notice mt-20">${ico('shield',15)} &nbsp; ${esc(t('musicLocal'))}</div>`;
+  }
+  function musicModal() {
+    modal(t('musicAdd'),`<form id="musicForm" class="stack">
+      <div class="field"><label for="musicTitle">${esc(t('musicSong'))}</label><input id="musicTitle" name="name" class="input" maxlength="120" required placeholder="${state.lang==='fa'?'مثلاً: آهنگ محبوبت':'e.g. your favorite track'}"></div>
+      <div class="field"><label for="musicArtist">${esc(t('musicArtist'))}</label><input id="musicArtist" name="artist" class="input" maxlength="100" required></div>
+      <div class="field"><label for="musicAlbum">${esc(t('musicAlbum'))}</label><input id="musicAlbum" name="album" class="input" maxlength="120"></div>
+      <div class="field"><label for="musicVibe">${esc(t('musicVibe'))}</label><select id="musicVibe" name="vibe" class="select">${MUSIC_VIBES.filter(x=>x.id!=='all').map(v=>`<option value="${v.id}">${v.icon} ${esc(t(v.name))}</option>`).join('')}</select></div>
+      <div class="field"><label for="musicCover">${esc(t('musicCover'))}</label><input id="musicCover" name="cover" class="input" type="url" inputmode="url" maxlength="1000" placeholder="https://..."></div>
+      <div class="field"><label for="musicLink">${esc(t('musicLink'))}</label><input id="musicLink" name="link" class="input" type="url" inputmode="url" maxlength="1000" placeholder="https://..."></div>
+      <div class="field"><label for="musicNotes">${esc(t('musicNotes'))}</label><textarea id="musicNotes" name="notes" class="textarea" maxlength="1000" rows="3"></textarea></div>
+      ${modalFooter(t('musicAdd'))}</form>`);
+  }
+
   function renderJournal() {
     const ideas = cleanList(state.ideas);
     return `${pageHead(t('journalTitle'),t('journalSub'),`<button class="btn btn-primary" data-action="idea">${ico('plus')} ${esc(t('newIdea'))}</button>`)}
@@ -436,7 +527,7 @@
   }
   function render() {
     renderChrome();
-    const views = {home:renderHome,mood:renderMood,planner:renderPlanner,joy:renderJoy,journal:renderJournal,memories:renderMemories,wellness:renderWellness,settings:renderSettings};
+    const views = {home:renderHome,mood:renderMood,planner:renderPlanner,joy:renderJoy,music:renderMusic,journal:renderJournal,memories:renderMemories,wellness:renderWellness,settings:renderSettings};
     $('#view').innerHTML = (views[page]||renderHome)();
   }
   function navigate(to) {
@@ -562,6 +653,7 @@
   function handleAction(action) {
     if(action==='close'){closeModal();return;}
     if(action==='favorite')return favoriteModal();
+    if(action==='music-add')return musicModal();
     if(action==='idea')return ideaModal();
     if(action==='memory')return memoryModal();
     if(action==='photo')return photoModal();
@@ -576,6 +668,7 @@
     const nav=event.target.closest('[data-nav]');if(nav){event.preventDefault();closeModal();navigate(nav.dataset.nav);return;}
     const mood=event.target.closest('[data-mood]');if(mood){selectedMood=Number(mood.dataset.mood);$$('[data-mood]').forEach(el=>{let active=Number(el.dataset.mood)===selectedMood;el.classList.toggle('selected',active);el.setAttribute('aria-pressed',String(active));});$('#moodForm button[type="submit"]')?.removeAttribute('disabled');return;}
     const action=event.target.closest('[data-action]');if(action){event.preventDefault();handleAction(action.dataset.action);return;}
+    const musicFilter=event.target.closest('[data-music-vibe]');if(musicFilter){musicVibe=musicFilter.dataset.musicVibe;render();return;}
     const filter=event.target.closest('[data-filter]');if(filter){joyCategory=filter.dataset.filter;render();$('#joySearch')?.focus();return;}
     const tab=event.target.closest('[data-tab]');if(tab){activeMemoryTab=tab.dataset.tab;render();return;}
     const energy=event.target.closest('[data-energy]');if(energy){plannerEnergy=energy.dataset.energy;$$('[data-energy]').forEach(el=>el.classList.toggle('selected',el.dataset.energy===plannerEnergy));return;}
@@ -595,6 +688,7 @@
   });
   document.addEventListener('input',event=>{
     if(event.target.id==='joySearch'){joySearch=event.target.value;$('#joyGrid').innerHTML=joyGrid();}
+    if(event.target.id==='musicSearch'){musicSearch=event.target.value;$('#musicList').innerHTML=musicList();}
   });
   document.addEventListener('change',event=>{
     if(event.target.id==='planDuration')plannerDuration=Number(event.target.value)||60;
@@ -605,7 +699,7 @@
     }
   });
   document.addEventListener('submit',async event=>{
-    const form=event.target;if(!['moodForm','favoriteForm','ideaForm','memoryForm','photoForm','profileForm','aiForm'].includes(form.id))return;
+    const form=event.target;if(!['moodForm','favoriteForm','musicForm','ideaForm','memoryForm','photoForm','profileForm','aiForm'].includes(form.id))return;
     event.preventDefault();
     const data=new FormData(form),time=new Date().toISOString();
     if(form.id==='moodForm'){
@@ -614,6 +708,19 @@
     } else if(form.id==='favoriteForm'){
       const name=trunc(data.get('name')?.trim(),100);if(!name)return toast(t('required'));
       const type=String(data.get('type'));state.favorites.push({id:uid(),time,name,type:TYPES.some(x=>x.id===type)?type:'others',emoji:trunc(data.get('emoji'),8),notes:trunc(data.get('notes'),1500)});if(!save()){state.favorites.pop();return;}closeModal();render();toast(t('savedFavorite'));
+    } else if(form.id==='musicForm'){
+      const name=trunc(String(data.get('name')||'').trim(),120);
+      const artist=trunc(String(data.get('artist')||'').trim(),100);
+      if(!name||!artist)return toast(t('required'));
+      const rawCover=String(data.get('cover')||'').trim(),rawLink=String(data.get('link')||'').trim();
+      const cover=rawCover?safeMusicUrl(rawCover):'',link=rawLink?safeMusicUrl(rawLink):'';
+      if((rawCover&&!cover)||(rawLink&&!link))return toast(t('musicUrlError'));
+      if(musicTracks().some(x=>x.name.toLocaleLowerCase()===name.toLocaleLowerCase() && String(x.artist||'').toLocaleLowerCase()===artist.toLocaleLowerCase()))return toast(t('musicDuplicate'));
+      const vibe=String(data.get('vibe')||'other');
+      state.favorites.push({id:uid(),time,name,artist,album:trunc(data.get('album'),120),type:'music',emoji:'🎵',
+        vibe:MUSIC_VIBES.some(x=>x.id===vibe&&vibe!=='all')?vibe:'other',cover,link,notes:trunc(data.get('notes'),1000)});
+      if(!save()){state.favorites.pop();return;}
+      closeModal();render();toast(t('musicSaved'));
     } else if(form.id==='ideaForm'){
       const title=trunc(data.get('title')?.trim(),120);if(!title)return toast(t('required'));
       const kind=String(data.get('kind'));state.ideas.push({id:uid(),time,title,kind:['creative','project','personal','reflection'].includes(kind)?kind:'creative',content:trunc(data.get('content'),8000)});if(!save()){state.ideas.pop();return;}closeModal();render();toast(t('savedIdea'));
