@@ -752,7 +752,7 @@
       state.aiEndpoint=endpoint;state.aiConsent=data.get('consent')==='on';save();render();toast(t('updated'));
     }
   });
-  document.addEventListener('keydown',event=>{if(event.key==='Escape')closeModal();});
+  document.addEventListener('keydown',event=>{if(window.MyHealthExtras?.keydown?.(event))return;if(event.key==='Escape')closeModal();});
   window.addEventListener('hashchange',()=>{
     const hash=location.hash.slice(1);if(NAV.some(n=>n.id===hash)&&page!==hash){page=hash;render();}
   });
