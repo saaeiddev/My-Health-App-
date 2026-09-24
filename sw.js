@@ -1,4 +1,4 @@
-const CACHE = 'my-health-static-v4';
+const CACHE = 'my-health-static-v5';
 const ASSETS = ['./','./index.html','./styles.css','./app.js','./extras.js','./icon.svg','./manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
