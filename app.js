@@ -14,7 +14,7 @@
   const trunc = (text, len = 180) => String(text ?? '').slice(0, len);
   const defaults = () => ({
     name: '', lang: 'en', theme: 'light', moods: [], favorites: [], ideas: [], memories: [],
-    photos: [], wellness: {}, plans: [], aiConsent: false, aiEndpoint: ''
+    photos: [], wellness: {}, plans: [], extras: {}, aiConsent: false, aiEndpoint: ''
   });
   function load() {
     try {
@@ -31,7 +31,7 @@
     } catch { return defaults(); }
   }
   let state = load();
-  let page = ['home','mood','planner','joy','music','journal','memories','wellness','settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home';
+  let page = ['home','mood','planner','joy','music','journal','memories','wellness','settings','dj','quests','comfort','travel','vision','pet','insights','creative','cinema','sleep'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home';
   let selectedMood = null, joyCategory = 'all', joySearch = '', musicSearch = '', musicVibe = 'all', activeMemoryTab = 'memories', plannerDuration = 60, plannerEnergy = 'medium';
   let toastTimer;
   const tData = {
@@ -212,7 +212,7 @@
       personalNote:'این برنامه برای سبک زندگی و یادداشت‌های شخصی است، نه خدمات اورژانسی یا بالینی.'
     }
   };
-  const t = key => (tData[state.lang] && tData[state.lang][key]) || tData.en[key] || key;
+  const t = key => (tData[state.lang] && tData[state.lang][key]) || tData.en[key] || window.MyHealthExtras?.labels?.[state.lang]?.[key] || window.MyHealthExtras?.labels?.en?.[key] || key;
   const MOODS = [
     {score:5, emoji:'🤩', key:'feelingGreat', tint:'#e0fbef'},
     {score:4, emoji:'😊', key:'feelingGood', tint:'#e5f7f3'},
@@ -230,7 +230,10 @@
     {id:'home',icon:'home',group:0},{id:'mood',icon:'heart',group:0},
     {id:'planner',icon:'sparkle',group:0},{id:'wellness',icon:'activity',group:0},
     {id:'joy',icon:'star',group:1},{id:'music',icon:'music',group:1},{id:'journal',icon:'notebook',group:1},
-    {id:'memories',icon:'image',group:1},{id:'settings',icon:'settings',group:1}
+    {id:'memories',icon:'image',group:1},
+    {id:'dj',icon:'music',group:2},{id:'quests',icon:'star',group:2},{id:'comfort',icon:'heart',group:2},{id:'travel',icon:'image',group:2},{id:'vision',icon:'sparkle',group:2},
+    {id:'pet',icon:'heart',group:2},{id:'insights',icon:'activity',group:2},{id:'creative',icon:'sparkle',group:2},{id:'cinema',icon:'image',group:2},{id:'sleep',icon:'moon',group:2},
+    {id:'settings',icon:'settings',group:2}
   ];
   const paths = {
     home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
@@ -289,6 +292,7 @@
     $('#sidebar').innerHTML = `<a class="brand" href="#home"><span class="brand-mark">♥</span><span>My <em>Health</em></span></a>
       <div class="nav-group"><div class="nav-caption">${esc(t('main'))}</div>${NAV.filter(n=>n.group===0).map(navItem).join('')}</div>
       <div class="nav-group"><div class="nav-caption">${esc(t('collections'))}</div>${NAV.filter(n=>n.group===1).map(navItem).join('')}</div>
+      <div class="nav-group"><div class="nav-caption">${state.lang==='fa'?'دنیای من':'EXPLORE'}</div>${NAV.filter(n=>n.group===2).map(navItem).join('')}</div>
       <div class="sidebar-bottom"><div class="side-banner"><p>${state.lang==='fa'?'یک حال خوب کوچیک 🌸':'A little more joy 🌸'}</p><small>${esc(t('joyIdeaText'))}</small><button data-nav="planner">${esc(t('getInspired'))}</button></div>
       <div class="helper text-center">♥ &nbsp; ${esc(t('appFooter'))}</div></div>`;
     $('#topbar').innerHTML = `<div class="topbar-left"><div><span class="topbar-label">${esc(t('private'))}</span><h2 class="topbar-title">${esc(t(page))}</h2></div></div>
@@ -528,7 +532,7 @@
   function render() {
     renderChrome();
     const views = {home:renderHome,mood:renderMood,planner:renderPlanner,joy:renderJoy,music:renderMusic,journal:renderJournal,memories:renderMemories,wellness:renderWellness,settings:renderSettings};
-    $('#view').innerHTML = (views[page]||renderHome)();
+    $('#view').innerHTML = window.MyHealthExtras?.routes?.includes(page) ? window.MyHealthExtras.render(page, {state,save,esc,uid,today,latestMood,modal,closeModal,toast,render,navigate}) : (views[page]||renderHome)();
   }
   function navigate(to) {
     if (!NAV.some(n=>n.id===to)) return;
@@ -666,6 +670,7 @@
   }
   document.addEventListener('click',event=>{
     const nav=event.target.closest('[data-nav]');if(nav){event.preventDefault();closeModal();navigate(nav.dataset.nav);return;}
+    if(window.MyHealthExtras?.click(event)){event.preventDefault();return;}
     const mood=event.target.closest('[data-mood]');if(mood){selectedMood=Number(mood.dataset.mood);$$('[data-mood]').forEach(el=>{let active=Number(el.dataset.mood)===selectedMood;el.classList.toggle('selected',active);el.setAttribute('aria-pressed',String(active));});$('#moodForm button[type="submit"]')?.removeAttribute('disabled');return;}
     const action=event.target.closest('[data-action]');if(action){event.preventDefault();handleAction(action.dataset.action);return;}
     const musicFilter=event.target.closest('[data-music-vibe]');if(musicFilter){musicVibe=musicFilter.dataset.musicVibe;render();return;}
@@ -691,6 +696,7 @@
     if(event.target.id==='musicSearch'){musicSearch=event.target.value;$('#musicList').innerHTML=musicList();}
   });
   document.addEventListener('change',event=>{
+    if(window.MyHealthExtras?.change(event))return;
     if(event.target.id==='planDuration')plannerDuration=Number(event.target.value)||60;
     if(event.target.id==='importFile'){importData(event.target.files?.[0]);event.target.value='';}
     if(event.target.dataset.planCheck){
@@ -699,7 +705,9 @@
     }
   });
   document.addEventListener('submit',async event=>{
-    const form=event.target;if(!['moodForm','favoriteForm','musicForm','ideaForm','memoryForm','photoForm','profileForm','aiForm'].includes(form.id))return;
+    const form=event.target;
+    if(form.id==='extrasForm'){event.preventDefault();window.MyHealthExtras?.submit(form,new FormData(form));return;}
+    if(!['moodForm','favoriteForm','musicForm','ideaForm','memoryForm','photoForm','profileForm','aiForm'].includes(form.id))return;
     event.preventDefault();
     const data=new FormData(form),time=new Date().toISOString();
     if(form.id==='moodForm'){
