@@ -14,6 +14,31 @@ A colorful, responsive, bilingual **English / فارسی** personal lifestyle an
 - 📱 Responsive, installable PWA with offline shell
 - 🔒 Browser-only storage, import/export JSON backups and a wipe-all option
 
+## Ten additional lifestyle experiences
+
+All of these sections are bilingual, responsive and saved locally. They appear in the **EXPLORE / دنیای من** menu and under **More** on mobile.
+
+| Section | What it does |
+|---|---|
+| 🎧 Mood DJ | Makes an on-device mix from songs already saved in My Music, based on the latest recorded mood or a manually selected vibe. Opens saved listening links; it does not stream music itself. |
+| 🏆 Daily Quests | Preset and custom optional mini-challenges, daily checkboxes and earned XP. |
+| 🌿 My Comfort Zone | Personal soothing-things journal, a gentle optional animated breathing exercise, and calming tracks from My Music. |
+| 🌍 My Travel Map | Visited and dream destinations, notes and a stylized interactive world map. Pin coordinates are manually entered, with no location permission. |
+| 🌈 My Vision Board | Personal goals and inspiration with optional image links, categories and completion status. |
+| 🐾 My Pet | Pet profiles, optional pictures, birthdays and **in-app only** manual care reminders; not veterinary advice. |
+| 📊 My Life Insights | Read-only personal summaries of actual mood logs, water, daily quests and sleep; missing days are not inferred. |
+| 🤖 AI Creative Lab | An on-device personalized creative prompt generator, direct saving to Ideas, and an **opt-in** separate generative AI backend. |
+| 🎮 My Cinema & Gaming | Media watchlists and game backlogs, personal ratings, notes, completion status and links to your existing Favorites. |
+| 🌙 My Sleep & Dreams | Bedtime/wake-time self-logging with estimated hours, personal rest ratings and a private dream journal. |
+
+The original Overview, Mood Tracker, Joy Planner, My Music, Favorites, Ideas & Journal, Memories & Photos, Wellness and Settings are preserved. The new page implementation is in `extras.js`; its styling is scoped in `styles.css`. The main app supplies the new navigation routes, local data store, backups and shared settings.
+
+### Optional AI Creative Lab backend
+
+The on-device prompt generator works on GitHub Pages and does not send data anywhere. For generative challenges, deploy the included `api/create.js` alongside `api/plan.js` on your private Vercel backend and configure the same HTTPS `/api/plan` URL in Settings. Each generative creative request additionally requires checking its own consent box; only the selected creative category and up to eight favorite titles/categories are sent.
+
+Before operating the serverless endpoints publicly, implement authentication, rate limits, usage limits and anti-abuse protections. They are reference implementations, not a secured public AI service.
+
 ## Live website
 
 **https://saaeiddev.github.io/My-Health-App-/**
