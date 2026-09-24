@@ -532,7 +532,7 @@
   function render() {
     renderChrome();
     const views = {home:renderHome,mood:renderMood,planner:renderPlanner,joy:renderJoy,music:renderMusic,journal:renderJournal,memories:renderMemories,wellness:renderWellness,settings:renderSettings};
-    $('#view').innerHTML = window.MyHealthExtras?.routes?.includes(page) ? window.MyHealthExtras.render(page, {state,save,esc,uid,today,latestMood,modal,closeModal,toast,render,navigate}) : (views[page]||renderHome)();
+    $('#view').innerHTML = window.MyHealthExtras?.routes?.includes(page) ? window.MyHealthExtras.render(page, {state,save,esc,uid,today,latestMood,modal,closeModal,toast,render,navigate,compressPhoto}) : (views[page]||renderHome)();
   }
   function navigate(to) {
     if (!NAV.some(n=>n.id===to)) return;
@@ -613,6 +613,13 @@
       s.theme=['light','dark'].includes(s.theme)?s.theme:'light';
       s.name=trunc(s.name,60);
       s.wellness=s.wellness&&typeof s.wellness==='object'&&!Array.isArray(s.wellness)?s.wellness:{};
+      const extras=s.extras&&typeof s.extras==='object'&&!Array.isArray(s.extras)?s.extras:{};
+      for(const group of ['quests','comfort','travel','vision','pets','petCare','media','sleep']){
+        if(extras[group]!=null&&!Array.isArray(extras[group]))throw new Error('extras');
+        if(Array.isArray(extras[group])&&extras[group].length>1000)throw new Error('extras-limit');
+        extras[group]=(extras[group]||[]).filter(x=>x&&typeof x==='object'&&!Array.isArray(x)).map(x=>({...x,id:String(x.id||uid()).slice(0,100)}));
+      }
+      s.extras=extras;
       s.aiConsent=false;s.aiEndpoint='';
       const old=state;state=s;
       if(!save()){state=old;return;}
